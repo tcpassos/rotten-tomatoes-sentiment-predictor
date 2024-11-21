@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy import sparse
 import pickle
 
@@ -80,7 +79,9 @@ def main():
     st.write(f"**Gênero:** {movie_info.get('genre', 'Desconhecido')}")
     st.write(f"**Diretor:** {movie_info.get('director', 'Desconhecido')}")
     st.write(f"**Duração:** {movie_info.get('runtimeMinutes', 'Desconhecido')} minutos")
-    st.write(f"**Data de Lançamento:** {movie_info.get('releaseDateTheaters', 'Desconhecida')}")
+    release_date = pd.to_datetime(movie_info.get('releaseDateTheaters'), errors='coerce')
+    release_date = release_date.strftime('%d/%m/%Y') if not pd.isna(release_date) else 'Desconhecida'
+    st.write(f"**Data de Lançamento:** {release_date}")
 
     # Input para o texto do review
     review_text = st.text_area("Digite o seu review:", height=200)
@@ -97,9 +98,9 @@ def main():
         prediction = model.predict(X_combined)
         # Interpreta a previsão
         if prediction[0] == 1:
-            st.success("O review é previsto como **POSITIVO**.")
+            st.success("O review é previsto como **POSITIVO** 🍅.")
         else:
-            st.warning("O review é previsto como **NEGATIVO**.")
+            st.warning("O review é previsto como **NEGATIVO** 🤢.")
 
 if __name__ == '__main__':
     main()
