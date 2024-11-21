@@ -52,16 +52,16 @@ def get_movie_features(movie_id, movies_data, feature_columns):
 def display_pie_chart(reviews_data, movie_id):
     movie_reviews = reviews_data.loc[movie_id]
     sentiment_counts = movie_reviews['reviewState'].value_counts()
-    labels = ['Fresh', 'Rotten']
     sizes = [sentiment_counts.get('fresh', 0), sentiment_counts.get('rotten', 0)]
-    colors = ['#f23535','#5ebd6d']
+    colors = ['#f23535','#668132']
     explode = (0.1, 0)
 
     fig1, ax1 = plt.subplots(figsize=(4, 4))
-    ax1.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%',
+    ax1.pie(sizes, explode=explode, colors=colors, autopct='%1.1f%%',
             shadow=True, startangle=90, textprops={'fontsize': 14})
     ax1.axis('equal')
 
+    fig1.patch.set_alpha(0.0) 
     st.pyplot(fig1)
 
 def get_base64_image(image_path):
@@ -119,42 +119,42 @@ def main():
         release_date = release_date.strftime('%d/%m/%Y') if not pd.isna(release_date) else 'Desconhecida'
         st.write(f"**Data de Lançamento:** {release_date}")
 
-        # Input para o texto do review
-        review_text = st.text_area("Digite o seu review:", height=200)
-
-        # Botão para prever o sentimento
-        if st.button("Prever Sentimento"):
-            # Converte as features do filme em matriz esparsa
-            X_movies_sparse = sparse.csr_matrix(movie_features.values.reshape(1, -1))
-            # Vetoriza o texto do review
-            X_text_vec = vectorizer.transform([review_text])
-            # Combina as features de texto e filme
-            X_combined = sparse.hstack([X_text_vec, X_movies_sparse])
-            # Faz a previsão
-            prediction = model.predict(X_combined)
-            # Interpreta a previsão
-            if prediction[0] == 1:
-                fresh_img_base64 = get_base64_image("Fresh.png")
-                st.markdown(
-                    f"""
-                    <div style="display: flex; align-items: center;">
-                        <img src="data:image/png;base64,{fresh_img_base64}" width="50"/>
-                        <span style="color: green; font-weight: 500; margin-left: 10px;">O review é previsto como <strong>POSITIVO</strong>.</span>
-                    </div>
-                    """, unsafe_allow_html=True)
-            else:
-                rotten_img_base64 = get_base64_image("Rotten.png")
-                st.markdown(
-                    f"""
-                    <div style="display: flex; align-items: center;">
-                        <img src="data:image/png;base64,{rotten_img_base64}" width="50"/>
-                        <span style="color: red; font-weight: 500; margin-left: 10px;">O review é previsto como <strong>NEGATIVO</strong>.</span>
-                    </div>
-                    """, unsafe_allow_html=True)
-
     with col2:
         # Exibe o gráfico de pizza com os reviews do filme
         display_pie_chart(reviews_data, movie_id)
+
+    # Input para o texto do review
+    review_text = st.text_area("Digite o seu review:", height=200)
+
+    # Botão para prever o sentimento
+    if st.button("Prever Sentimento"):
+        # Converte as features do filme em matriz esparsa
+        X_movies_sparse = sparse.csr_matrix(movie_features.values.reshape(1, -1))
+        # Vetoriza o texto do review
+        X_text_vec = vectorizer.transform([review_text])
+        # Combina as features de texto e filme
+        X_combined = sparse.hstack([X_text_vec, X_movies_sparse])
+        # Faz a previsão
+        prediction = model.predict(X_combined)
+        # Interpreta a previsão
+        if prediction[0] == 1:
+            fresh_img_base64 = get_base64_image("Fresh.png")
+            st.markdown(
+                f"""
+                <div style="display: flex; align-items: center;">
+                    <img src="data:image/png;base64,{fresh_img_base64}" width="50"/>
+                    <span style="color: green; font-weight: 500; margin-left: 10px;">O review é previsto como <strong>POSITIVO</strong>.</span>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            rotten_img_base64 = get_base64_image("Rotten.png")
+            st.markdown(
+                f"""
+                <div style="display: flex; align-items: center;">
+                    <img src="data:image/png;base64,{rotten_img_base64}" width="50"/>
+                    <span style="color: red; font-weight: 500; margin-left: 10px;">O review é previsto como <strong>NEGATIVO</strong>.</span>
+                </div>
+                """, unsafe_allow_html=True)
 
 if __name__ == '__main__':
     main()
